@@ -1,0 +1,134 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "extensions_enablevmaccess_username": {
+            "type": "SecureString"
+        },
+        "extensions_enablevmaccess_password": {
+            "type": "SecureString"
+        },
+        "extensions_enablevmaccess_ssh_key": {
+            "type": "SecureString"
+        },
+        "extensions_enablevmaccess_reset_ssh": {
+            "type": "SecureString"
+        },
+        "extensions_enablevmaccess_remove_user": {
+            "type": "SecureString"
+        },
+        "extensions_enablevmaccess_expiration": {
+            "type": "SecureString"
+        },
+        "virtualMachines_Node1_name": {
+            "defaultValue": "Node1",
+            "type": "String"
+        },
+        "disks_Node1_OsDisk_1_a6dd23cf010c423d8a85771bf4aeb614_externalid": {
+            "defaultValue": "/subscriptions/73342f92-3b5f-429c-81c6-c3d1379474ae/resourceGroups/CARS2EUROPE-MPSCRAPER/providers/Microsoft.Compute/disks/Node1_OsDisk_1_a6dd23cf010c423d8a85771bf4aeb614",
+            "type": "String"
+        },
+        "networkInterfaces_node1632_externalid": {
+            "defaultValue": "/subscriptions/73342f92-3b5f-429c-81c6-c3d1379474ae/resourceGroups/Cars2Europe-MPscraper/providers/Microsoft.Network/networkInterfaces/node1632",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('virtualMachines_Node1_name')]",
+            "location": "westeurope",
+            "zones": [
+                "1"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "OpenLogic",
+                        "offer": "CentOS",
+                        "sku": "8_2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_Node1_name'), '_OsDisk_1_a6dd23cf010c423d8a85771bf4aeb614')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS",
+                            "id": "[parameters('disks_Node1_OsDisk_1_a6dd23cf010c423d8a85771bf4aeb614_externalid')]"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_Node1_name')]",
+                    "adminUsername": "azureuser",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azureuser/.ssh/authorized_keys",
+                                    "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2rdxqp5JBl6kK3rOSqveOg2wG\r\nt8YdIh+2ppNqBP1hAgYkkkrluTRrsjBPr15twiozofXFrQCI4yrEY3jfAHC3ZbPG\r\nhKeUpLsW09na4/Q01YREM3OAe0UzmLrxxHVPIOEbdsczh30MoR5BcWfmC6s7PUlm\r\nWU6yU2zlnxBxJJErYf8ydPV0eKWClvlyHD0uOAPSrqJVldU8k36+mdGAXwjV960d\r\nY/46hHl4m3Kom747pE/ih9wKVQlj6YpQACH2LIysC4TtdIzhaH18mG8kURpNVpBk\r\nuu/fb2boKqV4X2dk1WQnOp840RV60mVEpfo52HzOCskrLN/5ozZ3g6TBUI8U/HxY\r\ncj9VVz+6zDkzVYqceSXG4POADMQn+ZuRauuKRMKv0fCkecYT7ksakZRQNiXoMHtb\r\noUFP0Hzt1txuLCw2VZY93a08LFouYstj7OO7YsWBZFNvWVBMqWOHSbOrs+2hAlPV\r\nsOnSDLhxLddWtHNK7bG0Lo7XFpTnZ0W8lGuojOc= generated-by-azure\r\n"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault"
+                        }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_node1632_externalid')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(parameters('virtualMachines_Node1_name'), '/enablevmaccess')]",
+            "location": "westeurope",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_Node1_name'))]"
+            ],
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "VMAccessForLinux",
+                "typeHandlerVersion": "1.4",
+                "settings": {},
+                "protectedSettings": {
+                    "username": "[parameters('extensions_enablevmaccess_username')]",
+                    "password": "[parameters('extensions_enablevmaccess_password')]",
+                    "ssh_key": "[parameters('extensions_enablevmaccess_ssh_key')]",
+                    "reset_ssh": "[parameters('extensions_enablevmaccess_reset_ssh')]",
+                    "remove_user": "[parameters('extensions_enablevmaccess_remove_user')]",
+                    "expiration": "[parameters('extensions_enablevmaccess_expiration')]"
+                }
+            }
+        }
+    ]
+}
